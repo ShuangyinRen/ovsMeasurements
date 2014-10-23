@@ -473,14 +473,16 @@ class Cli(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def stats_reply_handler_flow(self, ev):
-        global LOOP_COUNT,REP_COUNT
-        REP_COUNT = REP_COUNT + 1
+        global LOOP_COUNT,REP_COUNT,CHECKER
         #import pdb; pdb.set_trace()
         body = ev.msg.body
-        self.flow_stats_reply_handler(body)
+        CHECKER = self.flow_stats_reply_handler(body)
+        if CHECKER == 0:
+				    REP_COUNT = REP_COUNT + 1
         if REP_COUNT == LOOP_COUNT:
             endtime = datetime.now()
             self.logger.info("duration: %f\n" % second(endtime-starttime))
+            self.logger.info("---------------------------------------------")
 
     def flow_stats_reply_handler(self, body):
         flows = []
@@ -490,5 +492,5 @@ class Cli(app_manager.RyuApp):
 
         self.logger.info('FlowStats: %d' % len(flows))
         #self.logger.info('%s' % flows)
-
+        return (len(flows) == 682)
 
